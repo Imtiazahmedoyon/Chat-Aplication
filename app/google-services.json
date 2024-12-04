@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "810526497573",
+    "firebase_url": "https://diuchat-project-default-rtdb.firebaseio.com",
+    "project_id": "diuchat-project",
+    "storage_bucket": "diuchat-project.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:810526497573:android:1cadb39b0b41e4e8c798cc",
+        "android_client_info": {
+          "package_name": "com.daffodil.diuchat"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "810526497573-ejqmo27j6pjdmkmpfvom3ash9373euc7.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.daffodil.diuchat",
+            "certificate_hash": "e1fef00b2e82f893781d5fc7e459e0a463615815"
+          }
+        },
+        {
+          "client_id": "810526497573-a23gi4d4t2tgjbqmhur2qft112qf6jvm.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsSBy7youqe3DBY4Q4lfG_CTzDN1Xy1TQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "810526497573-a23gi4d4t2tgjbqmhur2qft112qf6jvm.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
