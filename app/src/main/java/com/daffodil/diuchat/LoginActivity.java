@@ -39,6 +39,8 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         FirebaseApp.initializeApp(this);
         setContentView(R.layout.activity_login);
+
+        // Adjust padding for system UI elements
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -64,33 +66,47 @@ public class LoginActivity extends AppCompatActivity {
                 String email = loginEmail.getText().toString();
                 String pass = loginPassword.getText().toString();
 
-                if (!email.isEmpty() && Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-                    if (!pass.isEmpty()) {
-                        auth.signInWithEmailAndPassword(email, pass)
-                                .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
-                                    @Override
-                                    public void onSuccess(AuthResult authResult) {
-                                        Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
-                                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                                        finish();
-                                    }
-                                }).addOnFailureListener(new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        Toast.makeText(LoginActivity.this, "Check your Email and Password and try again.", Toast.LENGTH_SHORT).show();
-                                    }
-                                });
-                    } else {
-                        loginPassword.setError("Password cannot be empty");
-                    }
-                } else if (email.isEmpty()) {
+                if (TextUtils.isEmpty(email)) {
                     loginEmail.setError("Email cannot be empty");
-                } else {
-                    loginEmail.setError("Please enter a valid email");
+                    return;
                 }
+
+                if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+                    loginEmail.setError("Please enter a valid email");
+                    return;
+                }
+
+                if (TextUtils.isEmpty(pass)) {
+                    loginPassword.setError("Password cannot be empty");
+                    return;
+                }
+
+                loginButton.setEnabled(false);
+                loginButton.setText("Logging in...");
+
+                auth.signInWithEmailAndPassword(email, pass)
+                        .addOnSuccessListener(new OnSuccessListener<AuthResult>() {
+                            @Override
+                            public void onSuccess(AuthResult authResult) {
+                                loginButton.setEnabled(true);
+                                loginButton.setText("Login");
+                                Toast.makeText(LoginActivity.this, "Login Successful", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                finish();
+                            }
+                        })
+                        .addOnFailureListener(new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                loginButton.setEnabled(true);
+                                loginButton.setText("Login");
+                                Toast.makeText(LoginActivity.this, "Check your Email and Password and try again.", Toast.LENGTH_SHORT).show();
+                            }
+                        });
             }
         });
 
+        // Redirect to sign-up activity
         signupRedirectText.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -100,13 +116,16 @@ public class LoginActivity extends AppCompatActivity {
     }
     private boolean isConnectedToInternet() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Network network = cm.getActiveNetwork();
-            NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
-            return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-        } else {
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-            return networkInfo != null && networkInfo.isConnected();
+        if (cm != null) {
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
+                Network network = cm.getActiveNetwork();
+                NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+                return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+            } else {
+                NetworkInfo networkInfo = cm.getActiveNetworkInfo();
+                return networkInfo != null && networkInfo.isConnected();
+            }
         }
+        return false;
     }
 }
