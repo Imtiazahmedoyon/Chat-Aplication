@@ -17,6 +17,7 @@ import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -31,6 +32,7 @@ public class SignUpActivity extends AppCompatActivity {
     private EditText signupUsername, signupEmail, signupPassword;
     private Button signupButton;
     private TextView loginRedirectText;
+    private ProgressBar progressBar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +52,9 @@ public class SignUpActivity extends AppCompatActivity {
         signupPassword = findViewById(R.id.signup_password);
         signupButton = findViewById(R.id.signup_button);
         loginRedirectText = findViewById(R.id.loginRedirectText);
+        progressBar = findViewById(R.id.progressBar);
+
+        progressBar.setVisibility(View.GONE);
 
         signupButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -87,13 +92,16 @@ public class SignUpActivity extends AppCompatActivity {
                     return;
                 }
 
+                progressBar.setVisibility(View.VISIBLE);
                 signupButton.setEnabled(false);
                 signupButton.setText("Signing up...");
 
+                // Create user in Firebase
                 auth.createUserWithEmailAndPassword(email, password).addOnCompleteListener(new OnCompleteListener<AuthResult>() {
                     @Override
                     public void onComplete(@NonNull Task<AuthResult> task) {
-                        signupButton.setEnabled(true);
+                        progressBar.setVisibility(View.GONE);  // Hide progress bar
+                        signupButton.setEnabled(true);  // Enable the signup button again
                         signupButton.setText("Sign Up");
 
                         if (task.isSuccessful()) {
@@ -120,6 +128,7 @@ public class SignUpActivity extends AppCompatActivity {
             }
         });
     }
+
     private boolean isConnectedToInternet() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
 
