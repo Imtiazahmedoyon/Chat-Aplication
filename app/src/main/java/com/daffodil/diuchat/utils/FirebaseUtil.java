@@ -1,5 +1,6 @@
 package com.daffodil.diuchat.utils;
 
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,18 @@ public class FirebaseUtil {
         firestore.collection("Users").document(userId).set(user)
                 .addOnSuccessListener(aVoid -> callback.onSuccess())
                 .addOnFailureListener(callback::onFailure);
+    }
+
+    public static boolean isLoggedIn() {
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    public static void signOut() {
+        FirebaseAuth.getInstance().signOut();
     }
 
     public interface FirebaseCallback {
