@@ -20,6 +20,7 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 import com.daffodil.diuchat.utils.AndroidUtil;  // Import the AndroidUtil class
 
 public class LoginActivity extends AppCompatActivity {
@@ -57,15 +58,32 @@ public class LoginActivity extends AppCompatActivity {
                 loginEmail.setError("Please enter a valid email");
             } else if (TextUtils.isEmpty(pass)) {
                 loginPassword.setError("Password cannot be empty");
+            } else if (pass.length() < 6) {
+                loginPassword.setError("Password must be at least 6 characters long");
             } else {
                 auth.signInWithEmailAndPassword(email, pass)
                         .addOnSuccessListener(authResult -> {
-                            AndroidUtil.showToast(LoginActivity.this, "Login Successful");
-                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                            finish();
+                            FirebaseUser user = auth.getCurrentUser();
+                            if (user != null && !user.isEmailVerified()) {
+                                AndroidUtil.showToast(LoginActivity.this, "Please verify your email before logging in.");
+                                auth.signOut();
+                            } else {
+                                AndroidUtil.showToast(LoginActivity.this, "Login Successful");
+                                startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                                finish();
+                            }
                         })
                         .addOnFailureListener(e -> {
-                            AndroidUtil.showToast(LoginActivity.this, "Check your Email and Password and try again.");
+                            String errorMessage = "Login failed. Please check your Email and Password.";
+                            if (e.getMessage().contains("The password is invalid")) {
+                                errorMessage = "Incorrect password. Please try again.";
+                            } else if (e.getMessage().contains("There is no user record")) {
+                                errorMessage = "No account found with this email.";
+                            } else if (e.getMessage().contains("The email address is badly formatted")) {
+                                errorMessage = "Please enter a valid email address.";
+                            }
+
+                            AndroidUtil.showToast(LoginActivity.this, errorMessage);
                         });
             }
         });
@@ -82,13 +100,8 @@ public class LoginActivity extends AppCompatActivity {
     }
     private boolean isConnectedToInternet() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.M) {
-            Network network = cm.getActiveNetwork();
-            NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
-            return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-        } else {
-            NetworkInfo networkInfo = cm.getActiveNetworkInfo();
-            return networkInfo != null && networkInfo.isConnected();
-        }
+        Network network = cm.getActiveNetwork();
+        NetworkCapabilities capabilities = cm.getNetworkCapabilities(network);
+        return capabilities != null && capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
     }
 }
