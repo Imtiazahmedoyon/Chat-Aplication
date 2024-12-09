@@ -5,13 +5,13 @@ import android.content.Intent;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Patterns;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -29,17 +29,20 @@ public class LoginActivity extends AppCompatActivity {
     private TextView signupRedirectText, forgotPassword;
     private Button loginButton;
     private FirebaseAuth auth;
+    private ProgressBar progressBar;  // Added progress bar
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+        // Initialize views
         loginEmail = findViewById(R.id.login_email);
         loginPassword = findViewById(R.id.login_password);
         loginButton = findViewById(R.id.login_button);
         signupRedirectText = findViewById(R.id.signUpRedirectText);
         forgotPassword = findViewById(R.id.forgot_password);
+        progressBar = findViewById(R.id.login_progress_bar);  // Progress bar
 
         auth = FirebaseAuth.getInstance();
 
@@ -52,6 +55,7 @@ public class LoginActivity extends AppCompatActivity {
             String email = loginEmail.getText().toString().trim();
             String pass = loginPassword.getText().toString().trim();
 
+            // Validate email and password fields
             if (TextUtils.isEmpty(email)) {
                 loginEmail.setError("Email cannot be empty");
             } else if (!Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
@@ -61,6 +65,11 @@ public class LoginActivity extends AppCompatActivity {
             } else if (pass.length() < 6) {
                 loginPassword.setError("Password must be at least 6 characters long");
             } else {
+                // Show progress bar and hide login button
+                progressBar.setVisibility(View.VISIBLE);
+                loginButton.setVisibility(View.INVISIBLE);
+
+                // Attempt to log in
                 auth.signInWithEmailAndPassword(email, pass)
                         .addOnSuccessListener(authResult -> {
                             FirebaseUser user = auth.getCurrentUser();
@@ -83,7 +92,10 @@ public class LoginActivity extends AppCompatActivity {
                                 errorMessage = "Please enter a valid email address.";
                             }
 
+                            // Show error message and reset UI
                             AndroidUtil.showToast(LoginActivity.this, errorMessage);
+                            progressBar.setVisibility(View.GONE);
+                            loginButton.setVisibility(View.VISIBLE);
                         });
             }
         });
@@ -98,6 +110,7 @@ public class LoginActivity extends AppCompatActivity {
             startActivity(new Intent(LoginActivity.this, ForgotPasswordActivity.class));
         });
     }
+
     private boolean isConnectedToInternet() {
         ConnectivityManager cm = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
         Network network = cm.getActiveNetwork();
